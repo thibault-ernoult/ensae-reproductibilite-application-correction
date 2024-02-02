@@ -1,13 +1,17 @@
-import os
-import time
-import pathlib
-import multiprocessing
+"""coder : Thibault Ernoult
+Cours de mise en production des projets de data science de Lino Galiana
+"""
+
+# import os
+# import time
+# import pathlib
+# import multiprocessing
 import pandas as pd
-import numpy as np
+# import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+# from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
@@ -115,8 +119,8 @@ TrainingData["hasCabin"] = TrainingData.Cabin.notnull().astype(int)
 TestData["hasCabin"] = TestData.Cabin.notnull().astype(int)
 
 
-TrainingData["Ticket_Len"] = TrainingData["Ticket"].apply(lambda x: len(x))
-TestData["Ticket_Len"] = TestData["Ticket"].apply(lambda x: len(x))
+TrainingData["Ticket_Len"] = TrainingData["Ticket"].apply(len)
+TestData["Ticket_Len"] = TestData["Ticket"].apply(len)
 TrainingData.drop(labels="Ticket", axis=1, inplace=True)
 TestData.drop(labels="Ticket", axis=1, inplace=True)
 
@@ -155,9 +159,9 @@ rdmf.fit(X_train, y_train)
 rdmf_score = rdmf.score(X_test, y_test)
 rdmf_score_tr = rdmf.score(X_train, y_train)
 print(
-    "{} % de bonnes réponses sur les données de test pour validation (résultat qu'on attendrait si on soumettait notre prédiction sur le dataset de test.csv)".format(
-        round(rdmf_score * 100)
-    )
+    f"{round(rdmf_score * 100)} % de bonnes réponses sur les données de test"
+    "pour validation (résultat qu'on attendrait si on soumettait,"
+    "notre prédiction sur le dataset de test.csv)"
 )
 
 print("matrice de confusion")
