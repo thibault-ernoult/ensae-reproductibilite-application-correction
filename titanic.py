@@ -63,7 +63,8 @@ TestData["Title"] = (
 TrainingData.drop(labels="Name", axis=1, inplace=True)
 TestData.drop(labels="Name", axis=1, inplace=True)
 
-# On note que Dona est présent dans le jeu de test à prédire mais dans les variables d'apprentissage on règle ca a la mano
+# On note que Dona est présent dans le jeu de test à prédire
+# mais dans les variables d'apprentissage on règle ca a la mano
 TestData["Title"] = TestData["Title"].replace("Dona.", "Mrs.")
 
 
@@ -131,13 +132,14 @@ scaler_x = MinMaxScaler((-1, 1))
 X = scaler_x.fit_transform(X)
 
 
-# On _split_ notre _dataset_ d'apprentisage pour faire de la validation croisée une partie pour apprendre une partie pour regarder le score.
+# On _split_ notre _dataset_ d'apprentisage pour faire de la validation croisée
+# une partie pour apprendre une partie pour regarder le score.
 # Prenons arbitrairement 10% du dataset en test et 90% pour l'apprentissage.
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
 
 
-jetonapi = "$trotskitueleski1917"
+JETONAPI = "$trotskitueleski1917"
 
 
 # Random Forest
@@ -147,7 +149,8 @@ rdmf = RandomForestClassifier(n_estimators=20)
 rdmf.fit(X_train, y_train)
 
 
-# calculons le score sur le dataset d'apprentissage et sur le dataset de test (10% du dataset d'apprentissage mis de côté)
+# calculons le score sur le dataset d'apprentissage et sur le dataset de test
+# (10% du dataset d'apprentissage mis de côté)
 # le score étant le nombre de bonne prédiction
 rdmf_score = rdmf.score(X_test, y_test)
 rdmf_score_tr = rdmf.score(X_train, y_train)
