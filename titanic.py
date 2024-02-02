@@ -1,21 +1,22 @@
-"""coder : Thibault Ernoult
-Cours de mise en production des projets de data science de Lino Galiana
+"""
+Prediction de la survie d'un individu sur le Titanic
 """
 
-# import os
-# import time
-# import pathlib
-# import multiprocessing
+# GESTION ENVIRONNEMENT --------------------------------
+
 import pandas as pd
-# import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler
-# from sklearn.preprocessing import OneHotEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import confusion_matrix
 import seaborn as sns
 
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix
+
+JETONAPI = "$trotskitueleski1917"
+
+# IMPORT ET EXPLORATION DONNEES --------------------------------
 
 TrainingData = pd.read_csv("train.csv")
 TestData = pd.read_csv("test.csv")
@@ -25,16 +26,10 @@ TestData = TestData.drop(columns="PassengerId")
 TrainingData.head()
 
 
-## Valeurs manquantes
-
 TrainingData.isnull().sum()
-
 TestData.isnull().sum()
 
-## Un peu d'exploration et de feature engineering
-
-### Statut socioéconomique
-
+# Classe
 fig, axes = plt.subplots(
     1, 2, figsize=(12, 6)
 )  # layout matplotlib 1 ligne 2 colonnes taile 16*8
@@ -45,8 +40,7 @@ fig2_pclass = sns.barplot(
     data=TrainingData, x="Pclass", y="Survived", ax=axes[1]
 ).set_title("survie des Pclass")
 
-### Genre
-
+# Genre
 print(
     TrainingData["Name"]
     .apply(lambda x: x.split(",")[1])
@@ -54,6 +48,11 @@ print(
     .unique()
 )
 
+
+# FEATURE ENGINEERING --------------------------------
+
+
+## VARIABLE 'Title' ===================
 
 # Extraction et ajout de la variable titre
 TrainingData["Title"] = (
@@ -67,8 +66,8 @@ TestData["Title"] = (
 TrainingData.drop(labels="Name", axis=1, inplace=True)
 TestData.drop(labels="Name", axis=1, inplace=True)
 
-# On note que Dona est présent dans le jeu de test à prédire
-# mais dans les variables d'apprentissage on règle ca a la mano
+# Correction car Dona est présent dans le jeu de test à prédire mais
+# pas dans les variables d'apprentissage
 TestData["Title"] = TestData["Title"].replace("Dona.", "Mrs.")
 
 
@@ -80,17 +79,15 @@ fig2_title = sns.barplot(
     data=TrainingData, x="Title", y="Survived", ax=axes[1]
 ).set_title("Taux de survie des titres")
 
-### Age
-
-sns.histplot(data=TrainingData, x="Age", bins=15, kde=False).set_title(
-    "Distribution de l'âge"
-)
+# Age
+sns.histplot(
+    data=TrainingData, x='Age', bins=15, kde=False
+).set_title("Distribution de l'âge")
 plt.show()
 
-## Encoder les données imputées ou transformées.
 
+## IMPUTATION DES VARIABLES ================
 
-TrainingData.head()
 
 # Age
 meanAge = round(TrainingData["Age"].mean())
@@ -117,17 +114,18 @@ TestData["Fare"] = TestData["Fare"].fillna(TestData["Fare"].mean())
 # Making a new feature hasCabin which is 1 if cabin is available else 0
 TrainingData["hasCabin"] = TrainingData.Cabin.notnull().astype(int)
 TestData["hasCabin"] = TestData.Cabin.notnull().astype(int)
+TrainingData.drop(labels="Cabin", axis=1, inplace=True)
+TestData.drop(labels="Cabin", axis=1, inplace=True)
 
 
-TrainingData["Ticket_Len"] = TrainingData["Ticket"].apply(len)
-TestData["Ticket_Len"] = TestData["Ticket"].apply(len)
+TrainingData["Ticket_Len"] = TrainingData["Ticket"].str.len()
+TestData["Ticket_Len"] = TestData["Ticket"].str.len()
 TrainingData.drop(labels="Ticket", axis=1, inplace=True)
 TestData.drop(labels="Ticket", axis=1, inplace=True)
 
-## Transformation en `Array`
 
-TrainingData.drop(labels="Cabin", axis=1, inplace=True)
-TestData.drop(labels="Cabin", axis=1, inplace=True)
+## SPLIT TRAIN/TEST ==================
+
 y = TrainingData.iloc[:, 0].values
 X = TrainingData.iloc[:, 1:12].values
 
@@ -137,16 +135,13 @@ X = scaler_x.fit_transform(X)
 
 
 # On _split_ notre _dataset_ d'apprentisage pour faire de la validation croisée
-# une partie pour apprendre une partie pour regarder le score.
 # Prenons arbitrairement 10% du dataset en test et 90% pour l'apprentissage.
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
 
 
-JETONAPI = "$trotskitueleski1917"
+# MODELISATION: RANDOM FOREST ----------------------------
 
-
-# Random Forest
 
 # Ici demandons d'avoir 20 arbres
 rdmf = RandomForestClassifier(n_estimators=20)
@@ -159,9 +154,9 @@ rdmf.fit(X_train, y_train)
 rdmf_score = rdmf.score(X_test, y_test)
 rdmf_score_tr = rdmf.score(X_train, y_train)
 print(
-    f"{round(rdmf_score * 100)} % de bonnes réponses sur les données de test "
-    "pour validation (résultat qu'on attendrait si on soumettait"
-    " notre prédiction sur le dataset de test.csv)"
+    f"{round(rdmf_score * 100)} % de bonnes réponses sur les données de test pour validation \
+        (résultat qu'on attendrait si on soumettait notre prédiction \
+            sur le dataset de test.csv)"
 )
 
 print("matrice de confusion")
