@@ -159,9 +159,9 @@ rdmf.fit(X_train, y_train)
 rdmf_score = rdmf.score(X_test, y_test)
 rdmf_score_tr = rdmf.score(X_train, y_train)
 print(
-    f"{round(rdmf_score * 100)} % de bonnes réponses sur les données de test"
-    "pour validation (résultat qu'on attendrait si on soumettait,"
-    "notre prédiction sur le dataset de test.csv)"
+    f"{round(rdmf_score * 100)} % de bonnes réponses sur les données de test "
+    "pour validation (résultat qu'on attendrait si on soumettait"
+    " notre prédiction sur le dataset de test.csv)"
 )
 
 print("matrice de confusion")
