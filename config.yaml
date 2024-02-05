@@ -1,0 +1,4 @@
+jeton_api: "$trotskitueleski1917"
+train_path: "train.csv"
+test_path: "test.csv"
+test_fraction: .1
