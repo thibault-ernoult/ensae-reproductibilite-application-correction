@@ -3,6 +3,7 @@ Prediction de la survie d'un individu sur le Titanic
 """
 
 # GESTION ENVIRONNEMENT --------------------------------
+import argparse
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -142,9 +143,16 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
 
 # MODELISATION: RANDOM FOREST ----------------------------
 
+parser = argparse.ArgumentParser(description="Nombre d'arbres")
+parser.add_argument(
+    "--n_trees", type=int, default=20, help="Nombre d'arbres dans la random forest"
+)
+args = parser.parse_args()
+n_trees = args.n_trees
+
 
 # Ici demandons d'avoir 20 arbres
-rdmf = RandomForestClassifier(n_estimators=20)
+rdmf = RandomForestClassifier(n_estimators=n_trees)
 rdmf.fit(X_train, y_train)
 
 
