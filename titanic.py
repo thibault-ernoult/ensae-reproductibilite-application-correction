@@ -17,6 +17,14 @@ from sklearn.metrics import confusion_matrix
 
 JETONAPI = "$trotskitueleski1917"
 
+# ARGUMENTS OPTIONNELS ----------------------------------------
+
+parser = argparse.ArgumentParser(description="Nombre d'arbres")
+parser.add_argument(
+    "--n_trees", type=int, default=20, help="Nombre d'arbres dans la random forest"
+)
+args = parser.parse_args()
+
 # IMPORT ET EXPLORATION DONNEES --------------------------------
 
 TrainingData = pd.read_csv("train.csv")
@@ -111,7 +119,7 @@ TestData["Embarked"] = TestData["Embarked"].fillna("S")
 
 
 TestData["Fare"] = TestData["Fare"].fillna(TestData["Fare"].mean())
-
+s
 # Making a new feature hasCabin which is 1 if cabin is available else 0
 TrainingData["hasCabin"] = TrainingData.Cabin.notnull().astype(int)
 TestData["hasCabin"] = TestData.Cabin.notnull().astype(int)
@@ -143,16 +151,9 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
 
 # MODELISATION: RANDOM FOREST ----------------------------
 
-parser = argparse.ArgumentParser(description="Nombre d'arbres")
-parser.add_argument(
-    "--n_trees", type=int, default=20, help="Nombre d'arbres dans la random forest"
-)
-args = parser.parse_args()
-n_trees = args.n_trees
-
 
 # Ici demandons d'avoir 20 arbres
-rdmf = RandomForestClassifier(n_estimators=n_trees)
+rdmf = RandomForestClassifier(n_estimators=args.n_trees)
 rdmf.fit(X_train, y_train)
 
 
