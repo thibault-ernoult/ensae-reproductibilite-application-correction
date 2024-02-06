@@ -7,7 +7,7 @@
 > [!IMPORTANT]
 > Pour que le script `titanic.py` fonctionne, il vous faut créer un fichier `config.yaml`,
 de la forme :
-```
+```yaml
 jeton_api: ####
 train_path: ####
 test_path: ####
