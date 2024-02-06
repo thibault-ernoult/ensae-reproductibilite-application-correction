@@ -34,14 +34,17 @@ def import_config_yaml(fichier_yaml: str):
     return config
 
 
-parametres = import_config_yaml("config.yaml")
+config = import_config_yaml("config.yaml")
 
-jetonapi = parametres["jeton_api"]
+API_TOKEN = config.get("jeton_api")
+TRAIN_PATH = config.get("train_path")
+TEST_PATH = config.get("test_path")
+TEST_FRACTION = config.get("test_fraction")
 
 # IMPORT ET EXPLORATION DONNEES --------------------------------
 
-TrainingData = pd.read_csv(parametres["train_path"])
-TestData = pd.read_csv(parametres["test_path"])
+TrainingData = pd.read_csv(TRAIN_PATH)
+TestData = pd.read_csv(TEST_PATH)
 TrainingData = TrainingData.drop(columns="PassengerId")
 TestData = TestData.drop(columns="PassengerId")
 
@@ -157,7 +160,7 @@ X = scaler_x.fit_transform(X)
 # On _split_ notre _dataset_ d'apprentisage pour faire de la validation croisée
 # Prenons arbitrairement 10% du dataset en test et 90% pour l'apprentissage.
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=parametres["test_fraction"])
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_FRACTION)
 
 
 # MODELISATION: RANDOM FOREST ----------------------------
