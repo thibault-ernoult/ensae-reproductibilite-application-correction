@@ -68,12 +68,15 @@ def create_variable_title(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame with Title and without Name
     """
-    df["Title"] = df["Name"].str.split(',').str[1].str.split('.').str[0]
+    df["Title"] = df["Name"].str.split(",").str[1].str.split(".").str[0]
     df.drop(labels="Name", axis=1, inplace=True)
     # Correction car Dona est présent dans le jeu de test à prédire
     # ... mais n'est pas dans les variables d'apprentissage
     df["Title"] = df["Title"].replace("Dona.", "Mrs.")
     return df
+
+
+def fill_missing_values(df: )
 
 
 # IMPORT DES PARAMETRES DU SCRIPT-------------------------------
@@ -115,21 +118,8 @@ print(
 
 ## VARIABLE 'Title' ===================
 
-# Extraction et ajout de la variable titre
-TrainingData["Title"] = (
-    TrainingData["Name"].apply(lambda x: x.split(",")[1]).apply(lambda x: x.split()[0])
-)
-TestData["Title"] = (
-    TestData["Name"].apply(lambda x: x.split(",")[1]).apply(lambda x: x.split()[0])
-)
-
-# Suppression de la variable Titre
-TrainingData.drop(labels="Name", axis=1, inplace=True)
-TestData.drop(labels="Name", axis=1, inplace=True)
-
-# Correction car Dona est présent dans le jeu de test à prédire mais
-# pas dans les variables d'apprentissage
-TestData["Title"] = TestData["Title"].replace("Dona.", "Mrs.")
+TrainingData = create_variable_title(TrainingData)
+TestData = create_variable_title(TestData)
 
 
 fx, axes = plt.subplots(2, 1, figsize=(15, 10))
@@ -141,9 +131,9 @@ fig2_title = sns.barplot(
 ).set_title("Taux de survie des titres")
 
 # Age
-sns.histplot(
-    data=TrainingData, x='Age', bins=15, kde=False
-).set_title("Distribution de l'âge")
+sns.histplot(data=TrainingData, x="Age", bins=15, kde=False).set_title(
+    "Distribution de l'âge"
+)
 plt.show()
 
 
@@ -155,7 +145,12 @@ meanAge = round(TrainingData["Age"].mean())
 TrainingData["Age"] = TrainingData["Age"].fillna(meanAge)
 TestData["Age"] = TrainingData["Age"].fillna(meanAge)
 
-# Sex, Title et Embarked
+# Embarked and Fare
+TrainingData["Embarked"] = TrainingData["Embarked"].fillna("S")
+TestData["Embarked"] = TestData["Embarked"].fillna("S")
+TestData["Fare"] = TestData["Fare"].fillna(TestData["Fare"].mean())
+
+# Sex, Title
 label_encoder_sex = LabelEncoder()
 label_encoder_title = LabelEncoder()
 label_encoder_embarked = LabelEncoder()
@@ -166,9 +161,7 @@ TrainingData["Embarked"] = label_encoder_embarked.fit_transform(
 )
 
 
-TrainingData["Embarked"] = TrainingData["Embarked"].fillna("S")
-TestData["Embarked"] = TestData["Embarked"].fillna("S")
-TestData["Fare"] = TestData["Fare"].fillna(TestData["Fare"].mean())
+
 
 # Making a new feature hasCabin which is 1 if cabin is available else 0
 TrainingData["hasCabin"] = TrainingData.Cabin.notnull().astype(int)
