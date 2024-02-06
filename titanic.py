@@ -25,8 +25,10 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+# FONCTIONS ---------------------------------
 
-def import_config_yaml(fichier_yaml: str):
+
+def import_config_yaml(fichier_yaml: str) -> dict:
     """importer les paramètres d'un fichier yaml
 
     Args:
