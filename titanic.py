@@ -27,11 +27,19 @@ args = parser.parse_args()
 
 
 def import_config_yaml(fichier_yaml: str):
-    config = {}
+    """importer les paramètres d'un fichier yaml
+
+    Args:
+        fichier_yaml (str): le fichier de configuration .yaml
+
+    Returns:
+        dict: contient l'ensemble des paramètres définis par le fichier d'entrée
+    """
+    dict_config = {}
     if os.path.exists(fichier_yaml):
         with open(fichier_yaml, "r", encoding="utf-8") as stream :
-            config = yaml.safe_load(stream)
-    return config
+            dict_config = yaml.safe_load(stream)
+    return dict_config
 
 
 config = import_config_yaml("config.yaml")
