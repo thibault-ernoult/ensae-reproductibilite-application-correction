@@ -1,5 +1,5 @@
 """
-Import des paramètres et des données
+Fonctions d'import des paramètres et des données
 """
 import os
 import yaml
