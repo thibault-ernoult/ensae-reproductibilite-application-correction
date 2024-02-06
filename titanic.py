@@ -47,8 +47,8 @@ def import_config_yaml(fichier_yaml: str) -> dict:
 config = import_config_yaml("config.yaml")
 
 API_TOKEN = config.get("jeton_api")
-TRAIN_PATH = config.get("train_path")
-TEST_PATH = config.get("test_path")
+TRAIN_PATH = config.get("train_path", "train.csv")
+TEST_PATH = config.get("test_path", "test.csv")
 TEST_FRACTION = config.get("test_fraction")
 
 # IMPORT ET EXPLORATION DONNEES --------------------------------
