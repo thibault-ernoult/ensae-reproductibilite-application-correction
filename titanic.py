@@ -44,6 +44,11 @@ def import_config_yaml(fichier_yaml: str) -> dict:
     return dict_config
 
 
+
+
+# IMPORT DES PARAMETRES DU SCRIPT-------------------------------
+
+
 config = import_config_yaml("config.yaml")
 
 API_TOKEN = config.get("jeton_api")
