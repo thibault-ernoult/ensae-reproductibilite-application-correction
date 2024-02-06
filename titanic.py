@@ -44,6 +44,19 @@ def import_config_yaml(fichier_yaml: str) -> dict:
     return dict_config
 
 
+def import_data(fichier_csv: str) -> pd.DataFrame:
+    """Import a .csv file and convert it into a DataFrame
+    Drop the useless PassengerID column
+
+    Args:
+        fichier_csv (str): chemin du fichier .csv
+
+    Returns:
+        pd.DataFrame: DataFrame utilisable
+    """
+    data = pd.read_csv(fichier_csv)
+    data = data.drop(columns="PassengerID")
+    return data
 
 
 # IMPORT DES PARAMETRES DU SCRIPT-------------------------------
@@ -58,10 +71,8 @@ TEST_FRACTION = config.get("test_fraction")
 
 # IMPORT ET EXPLORATION DONNEES --------------------------------
 
-TrainingData = pd.read_csv(TRAIN_PATH)
-TestData = pd.read_csv(TEST_PATH)
-TrainingData = TrainingData.drop(columns="PassengerId")
-TestData = TestData.drop(columns="PassengerId")
+TrainingData = import_data(TRAIN_PATH)
+TestData = import_data(TEST_PATH)
 
 TrainingData.head()
 
