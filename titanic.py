@@ -28,41 +28,39 @@ args = parser.parse_args()
 # FONCTIONS ---------------------------------
 
 
-def import_config_yaml(fichier_yaml: str) -> dict:
+def import_config_yaml(path: str) -> dict:
     """importer les paramètres d'un fichier yaml
 
     Args:
-        fichier_yaml (str): le fichier de configuration .yaml
+        path(str): le fichier de configuration .yaml
 
     Returns:
         dict: contient l'ensemble des paramètres définis par le fichier d'entrée
     """
     dict_config = {}
-    if os.path.exists(fichier_yaml):
-        with open(fichier_yaml, "r", encoding="utf-8") as stream :
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as stream:
             dict_config = yaml.safe_load(stream)
     return dict_config
 
 
-def import_data(fichier_csv: str) -> pd.DataFrame:
+def import_data(path: str) -> pd.DataFrame:
     """Import a .csv file and convert it into a DataFrame
     Drop the useless PassengerID column
 
     Args:
-        fichier_csv (str): chemin du fichier .csv
+        path (str): chemin du fichier .csv
 
     Returns:
         pd.DataFrame: DataFrame utilisable
     """
-    data = pd.read_csv(fichier_csv)
+    data = pd.read_csv(path)
     data = data.drop(columns="PassengerID")
     return data
 
 
-def create_title(df: pd.DataFrame) -> pd.DataFrame:
-    df[["Last Name + Title", "First Name"]] = df["Name"].str.split('.', expand=True)
-    df[["Last Name", "Title"]] = df["Last Name + Title"].str.split(' ', expand=True)
-    return 0
+def create_variable_title(df: pd.DataFrame) -> pd.DataFrame:
+    
 
 
 # IMPORT DES PARAMETRES DU SCRIPT-------------------------------
