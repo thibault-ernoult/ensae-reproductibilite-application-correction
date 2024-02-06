@@ -3,13 +3,12 @@ Prediction de la survie d'un individu sur le Titanic
 """
 
 # GESTION ENVIRONNEMENT --------------------------------
+
 import os
 import argparse
 import yaml
-
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
@@ -17,228 +16,249 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix
 
-# ARGUMENTS OPTIONNELS ----------------------------------------
-
-parser = argparse.ArgumentParser(description="Nombre d'arbres")
-parser.add_argument(
-    "--n_trees", type=int, default=20, help="Nombre d'arbres dans la random forest"
-)
+parser = argparse.ArgumentParser(description="Paramètres du random forest")
+parser.add_argument("--n_trees", type=int, default=20, help="Nombre d'arbres")
 args = parser.parse_args()
 
-# FONCTIONS ---------------------------------
+
+# FONCTIONS --------------------
 
 
-def import_config_yaml(path: str) -> dict:
-    """importer les paramètres d'un fichier yaml
-
-    Args:
-        path(str): le fichier de configuration .yaml
-
-    Returns:
-        dict: contient l'ensemble des paramètres définis par le fichier d'entrée
-    """
+def import_yaml_config(filename: str = "toto.yaml") -> dict:
     dict_config = {}
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as stream:
+    if os.path.exists(filename):
+        with open(filename, "r", encoding="utf-8") as stream:
             dict_config = yaml.safe_load(stream)
     return dict_config
 
 
 def import_data(path: str) -> pd.DataFrame:
-    """Import a .csv file and convert it into a DataFrame
-    Drop the useless PassengerID column
-
+    """Import Titanic datasets
     Args:
-        path (str): chemin du fichier .csv
-
+        path (str): File location
     Returns:
-        pd.DataFrame: DataFrame utilisable
+        pd.DataFrame: Titanic dataset
     """
+
     data = pd.read_csv(path)
-    data = data.drop(columns="PassengerID")
+    data = data.drop(columns="PassengerId")
+
     return data
 
 
-def create_variable_title(df: pd.DataFrame) -> pd.DataFrame:
-    """Create the "Title" variable and delete the "Name" one
-
+def create_variable_title(data: pd.DataFrame, variable_name: str = "Name"):
+    """Transform name into title
     Args:
-        df (pd.DataFrame): input DataFrame
-
+        data (pd.DataFrame): Dataset that should be modified
+        variable_name (str, optional): Defaults to "Name".
     Returns:
-        pd.DataFrame: DataFrame with Title and without Name
+        _type_: DataFrame with a title column
     """
-    df["Title"] = df["Name"].str.split(",").str[1].str.split(".").str[0]
-    df.drop(labels="Name", axis=1, inplace=True)
-    # Correction car Dona est présent dans le jeu de test à prédire
-    # ... mais n'est pas dans les variables d'apprentissage
-    df["Title"] = df["Title"].replace("Dona.", "Mrs.")
-    return df
+
+    data["Title"] = data[variable_name].str.split(",").str[1].str.split().str[0]
+
+    data.drop(labels=variable_name, axis=1, inplace=True)
+
+    # Dona est présent dans le jeu de test à prédire mais
+    # pas dans les variables d'apprentissage -> corrige
+    data["Title"] = data["Title"].replace("Dona.", "Mrs.")
+
+    return data
 
 
-def fillna_columns(
-    df: pd.DataFrame, column: str = "Age", value: float = 0.0
+def fill_na_column(
+    data: pd.DataFrame, column: str = "Age", value: float = 0.0
 ) -> pd.DataFrame:
-    """fill missing values in a column
-
+    """Imputation for a given column
     Args:
-        df (pd.DataFrame): input DataFrame
-        column (str, optional): column label. Defaults to "Age".
-        value (float, optional): fill value. Defaults to 0.0.
-
+        data (pd.DataFrame): Dataset that should be modified
+        column (str, optional): Column that should be imputed. Defaults to "Age".
     Returns:
-        pd.DataFrame: filled DataFrame
+        pd.DataFrame: Initial dataset with mean-imputed column
     """
-    df[column] = df[column].fillna(value)
-    return df
+    data[column] = data[column].fillna(value)
+    return data
 
 
-def fillna_titanic(df: pd.DataFrame) -> pd.DataFrame:
+def fill_na_titanic(data: pd.DataFrame) -> pd.DataFrame:
     """Pipeline of imputations
-
     Args:
-        df (pd.DataFrame): DataFrame to impute
-
+        data (pd.DataFrame): Titanic dataframe
     Returns:
-        pd.DataFrame: imputed DataFrame
+        pd.DataFrame: Titanic dataframe with age, embarked and fare columns imputed
     """
-    # Imputation de la variable Age
-    meanAge = round(df["Age"].mean())
-    df["Age"] = fillna_columns(df, "Age", meanAge)
 
-    # Imputation de la variable Embarked
-    df["Embarked"] = fillna_columns(df, "Embarked", "S")
+    # Age variable imputation
+    mean_age_training = data["Age"].mean().round()
+    data = fill_na_column(data, "Age", mean_age_training)
 
-    # Imputation de la variable Fare
-    meanFare = df["Fare"].mean()
-    df["Fare"] = fillna_columns(df, "Fare", meanFare)
-    
-    return df
+    # Embarked imputed to S
+    data = fill_na_column(data, "Embarked", "S")
+
+    # Mean Fare imputation
+    mean_fare_imputation = data["Fare"].mean()
+    data = fill_na_column(data, "Fare", mean_fare_imputation)
+
+    return data
 
 
-# IMPORT DES PARAMETRES DU SCRIPT-------------------------------
+def label_encoder_titanic_column(
+    data: pd.DataFrame, column: str = "Sex"
+) -> pd.DataFrame:
+    """Label encoder for a given column
+    Args:
+        data (pd.DataFrame): Titanic dataset
+        column (str, optional): Column that should be encoded. Defaults to "Sex".
+    Returns:
+        pd.DataFrame: Titanic with column encoded
+    """
+    label_encoder_column = LabelEncoder()
+    data[column] = label_encoder_column.fit_transform(data[column].values)
 
-config = import_config_yaml("config.yaml")
+    return data
+
+
+def label_encoder_titanic(data: pd.DataFrame) -> pd.DataFrame:
+    """Label encoding pipeline for Titanic
+    Args:
+        data (pd.DataFrame): Titanic dataset
+    Returns:
+        pd.DataFrame: Titanic with Sex, Title and Embarked columns encoded
+    """
+
+    data = label_encoder_titanic_column(data, "Sex")
+    data = label_encoder_titanic_column(data, "Title")
+    data = label_encoder_titanic_column(data, "Embarked")
+
+    return data
+
+
+def check_has_cabin(data: pd.DataFrame) -> pd.DataFrame:
+    """Label if observation has a cabin
+    Args:
+        data (pd.DataFrame): Titanic dataset
+    Returns:
+        pd.DataFrame : Titanic dataset with a new observation
+    """
+    data["hasCabin"] = data.Cabin.notnull().astype(int)
+    data = data.drop(labels="Cabin", axis=1)
+    return data
+
+
+def ticket_length(data: pd.DataFrame) -> pd.DataFrame:
+    """Label observation ticket length
+    Args:
+        data (pd.DataFrame): Titanic dataset
+    Returns:
+        pd.DataFrame: Titanic dataset with a new ticket variable
+    """
+    data["Ticket_Len"] = data["Ticket"].str.len()
+    data = data.drop(labels="Ticket", axis=1)
+    return data
+
+
+def split_train_test_titanic(
+    data: pd.DataFrame, y_index: int = 0, fraction_test: float = 0.1
+):
+    """Split Titanic dataset in train and test sets
+    Args:
+        data (pd.DataFrame): Titanic dataset
+        y_index (int, optional): Positional index for target variable.
+        fraction_test (float, optional):
+            Fraction of observation dedicated to test dataset.
+            Defaults to 0.1.
+    Returns:
+        Four elements : X_train, X_test, y_train, y_test
+    """
+
+    y = data.iloc[:, y_index].values
+    X = data.iloc[:, 1:12].values
+
+    # Feature Scaling
+    scaler_x = MinMaxScaler((-1, 1))
+    X = scaler_x.fit_transform(X)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=fraction_test)
+
+    return X_train, X_test, y_train, y_test
+
+
+def random_forest_titanic(
+    data: pd.DataFrame, fraction_test: float = 0.9, n_trees: int = 20
+):
+    """Random forest model for Titanic survival
+    Args:
+        data (pd.DataFrame): _description_
+        fraction_test (float, optional): _description_. Defaults to 0.9.
+        n_trees (int, optional): _description_. Defaults to 20.
+    Returns:
+        _type_: _description_
+    """
+
+    X_train, X_test, y_train, y_test = split_train_test_titanic(
+        data, fraction_test=fraction_test
+    )
+
+    rdmf = RandomForestClassifier(n_estimators=n_trees)
+    rdmf.fit(X_train, y_train)
+
+    # calculons le score sur le dataset d'apprentissage et sur le dataset de test
+    # (10% du dataset d'apprentissage mis de côté)
+    # le score étant le nombre de bonne prédiction
+    rdmf_score = rdmf.score(X_test, y_test)
+    print(
+        f"{round(rdmf_score * 100)} % de bonnes réponses sur les données de test pour validation \
+            (résultat qu'on attendrait si on soumettait notre prédiction \
+                sur le dataset de test.csv)"
+    )
+
+    print("matrice de confusion")
+    confusion_matrix(y_test, rdmf.predict(X_test))
+
+    return rdmf, X_train, X_test, y_train, y_test
+
+
+# PARAMETRES -------------------------------
+
+config = import_yaml_config("config.yaml")
 
 API_TOKEN = config.get("jeton_api")
-TRAIN_PATH = config.get("train_path", "train.csv")
-TEST_PATH = config.get("test_path", "test.csv")
-TEST_FRACTION = config.get("test_fraction")
-
-# IMPORT ET EXPLORATION DONNEES --------------------------------
-
-TrainingData = import_data(TRAIN_PATH)
-TestData = import_data(TEST_PATH)
-
-# Classe
-fig, axes = plt.subplots(
-    1, 2, figsize=(12, 6)
-)  # layout matplotlib 1 ligne 2 colonnes taile 16*8
-fig1_pclass = sns.countplot(data=TrainingData, x="Pclass", ax=axes[0]).set_title(
-    "fréquence des Pclass"
-)
-fig2_pclass = sns.barplot(
-    data=TrainingData, x="Pclass", y="Survived", ax=axes[1]
-).set_title("survie des Pclass")
-
-# Genre
-print(
-    TrainingData["Name"]
-    .apply(lambda x: x.split(",")[1])
-    .apply(lambda x: x.split()[0])
-    .unique()
-)
+LOCATION_TRAIN = config.get("train_path", "train.csv")
+LOCATION_TEST = config.get("test_path", "test.csv")
+TEST_FRACTION = config.get("test_fraction", 0.1)
+N_TREES = args.n_trees
 
 
 # FEATURE ENGINEERING --------------------------------
 
+TrainingData = import_data(LOCATION_TRAIN)
+TestData = import_data(LOCATION_TEST)
 
-## VARIABLE 'Title' ===================
-
+# Create a 'Title' variable
 TrainingData = create_variable_title(TrainingData)
 TestData = create_variable_title(TestData)
-
-
-fx, axes = plt.subplots(2, 1, figsize=(15, 10))
-fig1_title = sns.countplot(data=TrainingData, x="Title", ax=axes[0]).set_title(
-    "Fréquence des titres"
-)
-fig2_title = sns.barplot(
-    data=TrainingData, x="Title", y="Survived", ax=axes[1]
-).set_title("Taux de survie des titres")
-
-# Age
-sns.histplot(data=TrainingData, x="Age", bins=15, kde=False).set_title(
-    "Distribution de l'âge"
-)
-plt.show()
 
 
 ## IMPUTATION DES VARIABLES ================
 
 
-# Age, Embarked and Fare
-TrainingData = fillna_titanic(TrainingData)
-TestData = fillna_titanic(TrainingData)
+TrainingData = fill_na_titanic(TrainingData)
+TestData = fill_na_titanic(TestData)
 
-# Sex, Title
-label_encoder_sex = LabelEncoder()
-label_encoder_title = LabelEncoder()
-label_encoder_embarked = LabelEncoder()
-TrainingData["Sex"] = label_encoder_sex.fit_transform(TrainingData["Sex"].values)
-TrainingData["Title"] = label_encoder_title.fit_transform(TrainingData["Sex"].values)
-TrainingData["Embarked"] = label_encoder_embarked.fit_transform(
-    TrainingData["Sex"].values
-)
+TrainingData = label_encoder_titanic(TrainingData)
+TestData = label_encoder_titanic(TestData)
 
 
 # Making a new feature hasCabin which is 1 if cabin is available else 0
-TrainingData["hasCabin"] = TrainingData.Cabin.notnull().astype(int)
-TestData["hasCabin"] = TestData.Cabin.notnull().astype(int)
-TrainingData.drop(labels="Cabin", axis=1, inplace=True)
-TestData.drop(labels="Cabin", axis=1, inplace=True)
+TrainingData = check_has_cabin(TrainingData)
+TestData = check_has_cabin(TestData)
 
-
-TrainingData["Ticket_Len"] = TrainingData["Ticket"].str.len()
-TestData["Ticket_Len"] = TestData["Ticket"].str.len()
-TrainingData.drop(labels="Ticket", axis=1, inplace=True)
-TestData.drop(labels="Ticket", axis=1, inplace=True)
-
-
-## SPLIT TRAIN/TEST ==================
-
-y = TrainingData.iloc[:, 0].values
-X = TrainingData.iloc[:, 1:12].values
-
-# Feature Scaling
-scaler_x = MinMaxScaler((-1, 1))
-X = scaler_x.fit_transform(X)
-
-
-# On _split_ notre _dataset_ d'apprentisage pour faire de la validation croisée
-# Prenons arbitrairement 10% du dataset en test et 90% pour l'apprentissage.
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_FRACTION)
+TrainingData = ticket_length(TrainingData)
+TestData = ticket_length(TestData)
 
 
 # MODELISATION: RANDOM FOREST ----------------------------
 
-
-# Ici demandons d'avoir 20 arbres
-rdmf = RandomForestClassifier(n_estimators=args.n_trees)
-rdmf.fit(X_train, y_train)
-
-
-# calculons le score sur le dataset d'apprentissage et sur le dataset de test
-# (10% du dataset d'apprentissage mis de côté)
-# le score étant le nombre de bonne prédiction
-rdmf_score = rdmf.score(X_test, y_test)
-rdmf_score_tr = rdmf.score(X_train, y_train)
-print(
-    f"{round(rdmf_score * 100)} % de bonnes réponses sur les données de test pour validation \
-        (résultat qu'on attendrait si on soumettait notre prédiction \
-            sur le dataset de test.csv)"
+model = random_forest_titanic(
+    data=TrainingData, fraction_test=TEST_FRACTION, n_trees=N_TREES
 )
-
-print("matrice de confusion")
-confusion_matrix(y_test, rdmf.predict(X_test))
