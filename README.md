@@ -2,10 +2,6 @@
 
 ## Instructions
 
-### Environnement
-
-
-
 ### Création d'un fichier de configuration des paramètres
 
 > [!IMPORTANT]
@@ -19,3 +15,10 @@ test_fraction: ####
 ```
 Remplacez les #### par les valeurs de votre choix
 
+### Réutilisation du code
+
+Pour executer le script main.py, le code suivant suffit :
+```shell
+pip install -r requirements.txt
+python main.py
+```
