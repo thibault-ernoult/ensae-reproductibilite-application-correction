@@ -1,6 +1,7 @@
 """
 Fonction pour entrainer et tester le modèle
 """
+import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import RandomForestClassifier
