@@ -79,11 +79,29 @@ def create_variable_title(df: pd.DataFrame) -> pd.DataFrame:
 def fillna_columns(
     df: pd.DataFrame, column: str = "Age", value: float = 0.0
 ) -> pd.DataFrame:
+    """fill missing values in a column
+
+    Args:
+        df (pd.DataFrame): input DataFrame
+        column (str, optional): column label. Defaults to "Age".
+        value (float, optional): fill value. Defaults to 0.0.
+
+    Returns:
+        pd.DataFrame: filled DataFrame
+    """
     df[column] = df[column].fillna(value)
     return df
 
 
 def fillna_titanic(df: pd.DataFrame) -> pd.DataFrame:
+    """Pipeline of imputations
+
+    Args:
+        df (pd.DataFrame): DataFrame to impute
+
+    Returns:
+        pd.DataFrame: imputed DataFrame
+    """
     # Imputation de la variable Age
     meanAge = round(df["Age"].mean())
     df["Age"] = fillna_columns(df, "Age", meanAge)
@@ -159,15 +177,9 @@ plt.show()
 ## IMPUTATION DES VARIABLES ================
 
 
-# Age
-meanAge = round(TrainingData["Age"].mean())
-TrainingData["Age"] = TrainingData["Age"].fillna(meanAge)
-TestData["Age"] = TrainingData["Age"].fillna(meanAge)
-
-# Embarked and Fare
-TrainingData["Embarked"] = TrainingData["Embarked"].fillna("S")
-TestData["Embarked"] = TestData["Embarked"].fillna("S")
-TestData["Fare"] = TestData["Fare"].fillna(TestData["Fare"].mean())
+# Age, Embarked and Fare
+TrainingData = fillna_titanic(TrainingData)
+TestData = fillna_titanic(TrainingData)
 
 # Sex, Title
 label_encoder_sex = LabelEncoder()
