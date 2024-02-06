@@ -3,7 +3,9 @@ Prediction de la survie d'un individu sur le Titanic
 """
 
 # GESTION ENVIRONNEMENT --------------------------------
+import os
 import argparse
+import yaml
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -15,8 +17,6 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix
 
-JETONAPI = "$trotskitueleski1917"
-
 # ARGUMENTS OPTIONNELS ----------------------------------------
 
 parser = argparse.ArgumentParser(description="Nombre d'arbres")
@@ -25,10 +25,23 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+
+def import_config_yaml(fichier_yaml: str):
+    config = {}
+    if os.path.exists(fichier_yaml):
+        with open(fichier_yaml, "r", encoding="utf-8") as stream :
+            config = yaml.safe_load(stream)
+    return config
+
+
+parametres = import_config_yaml("config.yaml")
+
+jetonapi = parametres["jeton_api"]
+
 # IMPORT ET EXPLORATION DONNEES --------------------------------
 
-TrainingData = pd.read_csv("train.csv")
-TestData = pd.read_csv("test.csv")
+TrainingData = pd.read_csv(parametres["train_path"])
+TestData = pd.read_csv(parametres["test_path"])
 TrainingData = TrainingData.drop(columns="PassengerId")
 TestData = TestData.drop(columns="PassengerId")
 
@@ -116,10 +129,8 @@ TrainingData["Embarked"] = label_encoder_embarked.fit_transform(
 
 TrainingData["Embarked"] = TrainingData["Embarked"].fillna("S")
 TestData["Embarked"] = TestData["Embarked"].fillna("S")
-
-
 TestData["Fare"] = TestData["Fare"].fillna(TestData["Fare"].mean())
-s
+
 # Making a new feature hasCabin which is 1 if cabin is available else 0
 TrainingData["hasCabin"] = TrainingData.Cabin.notnull().astype(int)
 TestData["hasCabin"] = TestData.Cabin.notnull().astype(int)
@@ -146,7 +157,7 @@ X = scaler_x.fit_transform(X)
 # On _split_ notre _dataset_ d'apprentisage pour faire de la validation croisée
 # Prenons arbitrairement 10% du dataset en test et 90% pour l'apprentissage.
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=parametres["test_fraction"])
 
 
 # MODELISATION: RANDOM FOREST ----------------------------
