@@ -76,7 +76,16 @@ def create_variable_title(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def fill_missing_values(df: )
+def fillna_columns(
+    df: pd.DataFrame, column: str = "Age", value: float = 0.0
+) -> pd.DataFrame:
+    df[column] = df[column].fillna(value)
+    return df
+
+
+def fillna_titanic(df: pd.DataFrame) -> pd.DataFrame:
+    # Imputation de la variable Age
+    df["Age"] = fillna_columns(df, "Age", )
 
 
 # IMPORT DES PARAMETRES DU SCRIPT-------------------------------
@@ -159,8 +168,6 @@ TrainingData["Title"] = label_encoder_title.fit_transform(TrainingData["Sex"].va
 TrainingData["Embarked"] = label_encoder_embarked.fit_transform(
     TrainingData["Sex"].values
 )
-
-
 
 
 # Making a new feature hasCabin which is 1 if cabin is available else 0
