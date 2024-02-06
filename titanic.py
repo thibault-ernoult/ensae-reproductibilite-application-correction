@@ -85,7 +85,17 @@ def fillna_columns(
 
 def fillna_titanic(df: pd.DataFrame) -> pd.DataFrame:
     # Imputation de la variable Age
-    df["Age"] = fillna_columns(df, "Age", )
+    meanAge = round(df["Age"].mean())
+    df["Age"] = fillna_columns(df, "Age", meanAge)
+
+    # Imputation de la variable Embarked
+    df["Embarked"] = fillna_columns(df, "Embarked", "S")
+
+    # Imputation de la variable Fare
+    meanFare = df["Fare"].mean()
+    df["Fare"] = fillna_columns(df, "Fare", meanFare)
+    
+    return df
 
 
 # IMPORT DES PARAMETRES DU SCRIPT-------------------------------
