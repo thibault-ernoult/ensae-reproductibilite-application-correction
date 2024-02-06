@@ -59,8 +59,13 @@ def import_data(fichier_csv: str) -> pd.DataFrame:
     return data
 
 
-# IMPORT DES PARAMETRES DU SCRIPT-------------------------------
+def create_title(df: pd.DataFrame) -> pd.DataFrame:
+    df[["Last Name + Title", "First Name"]] = df["Name"].str.split('.', expand=True)
+    df[["Last Name", "Title"]] = df["Last Name + Title"].str.split(' ', expand=True)
+    return 0
 
+
+# IMPORT DES PARAMETRES DU SCRIPT-------------------------------
 
 config = import_config_yaml("config.yaml")
 
@@ -73,12 +78,6 @@ TEST_FRACTION = config.get("test_fraction")
 
 TrainingData = import_data(TRAIN_PATH)
 TestData = import_data(TEST_PATH)
-
-TrainingData.head()
-
-
-TrainingData.isnull().sum()
-TestData.isnull().sum()
 
 # Classe
 fig, axes = plt.subplots(
