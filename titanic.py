@@ -60,7 +60,20 @@ def import_data(path: str) -> pd.DataFrame:
 
 
 def create_variable_title(df: pd.DataFrame) -> pd.DataFrame:
-    
+    """Create the "Title" variable and delete the "Name" one
+
+    Args:
+        df (pd.DataFrame): input DataFrame
+
+    Returns:
+        pd.DataFrame: DataFrame with Title and without Name
+    """
+    df["Title"] = df["Name"].str.split(',').str[1].str.split('.').str[0]
+    df.drop(labels="Name", axis=1, inplace=True)
+    # Correction car Dona est présent dans le jeu de test à prédire
+    # ... mais n'est pas dans les variables d'apprentissage
+    df["Title"] = df["Title"].replace("Dona.", "Mrs.")
+    return df
 
 
 # IMPORT DES PARAMETRES DU SCRIPT-------------------------------
