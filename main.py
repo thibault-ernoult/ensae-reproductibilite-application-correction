@@ -4,22 +4,11 @@ Prediction de la survie d'un individu sur le Titanic
 
 # GESTION ENVIRONNEMENT --------------------------------
 
-import os
 import argparse
-import yaml
-import pandas as pd
-import matplotlib.pyplot as plt
-
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import confusion_matrix
 
 import src.data.import_data as imp
 import src.features.build_features as bf
 import src.models.train_evaluate as te
-
-
 
 # PARAMETRES -------------------------------
 
@@ -49,7 +38,7 @@ TrainingData = bf.create_variable_title(TrainingData)
 TestData = bf.create_variable_title(TestData)
 
 
-## IMPUTATION DES VARIABLES ================
+# IMPUTATION DES VARIABLES ================
 
 
 TrainingData = bf.fill_na_titanic(TrainingData)
@@ -65,7 +54,6 @@ TestData = bf.check_has_cabin(TestData)
 
 TrainingData = bf.ticket_length(TrainingData)
 TestData = bf.ticket_length(TestData)
-
 
 
 # MODELISATION: RANDOM FOREST ----------------------------
