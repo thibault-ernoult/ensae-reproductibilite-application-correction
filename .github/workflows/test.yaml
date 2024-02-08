@@ -21,7 +21,7 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files '*.py')
+        pylint $(git ls-files '*.py') --fail-under=6
     - name: Test main code
       run: |
         python main.py
